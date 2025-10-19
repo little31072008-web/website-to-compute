@@ -1,56 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <!-- 
-      This is an HTML comment
-      You can write text in a comment and the content won't be visible in the page
-    -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧩 IQ Escape: The One-Minute Challenge</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    text-align: center;
+    background: linear-gradient(-45deg, #1a0033, #003366, #330033, #001a33);
+    background-size: 400% 400%;
+    animation: gradientMove 12s ease infinite;
+  }
+  @keyframes gradientMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
 
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="https://glitch.com/favicon.ico" />
-
-  <!--
-      This is the page head - it contains info the browser uses
-      Like the title, which appears on the browser tab but not inside the page
-      Further down you'll see the content that displays in the page
-    -->
-  <title>Hello World!</title>
-
-  <!-- The website stylesheet -->
-  <link rel="stylesheet" href="/style.css" />
-
-  <!-- The website JavaScript file -->
-  <script src="/script.js" defer></script>
+  h1 { margin-top: 30px; color: #00ffff; text-shadow: 0 0 20px #00ffff; }
+  #timer, #score, #bestScore { font-size: 20px; margin: 10px; }
+  #question { font-size: 22px; margin: 25px auto; width: 80%; }
+  input {
+    padding: 10px; border-radius: 10px; border: none;
+    font-size: 18px; text-align: center; width: 220px;
+    background: #111; color: #fff; box-shadow: 0 0 8px #00ffcc;
+  }
+  button {
+    background: linear-gradient(90deg, #00ffcc, #00aaff);
+    border: none; border-radius: 10px; padding: 10px 20px;
+    font-weight: bold; font-size: 18px; cursor: pointer;
+    margin-top: 15px; transition: 0.2s ease-in-out;
+  }
+  button:hover { transform: scale(1.05); box-shadow: 0 0 15px #00ffcc; }
+  #startBtn { font-size: 22px; background: linear-gradient(90deg, #ff6600, #ff3300); color: #fff; }
+  #result { font-size: 18px; margin-top: 15px; }
+  .progress-container { width: 80%; height: 14px; background: #333; margin: 20px auto; border-radius: 10px; overflow: hidden; }
+  .progress-bar { width: 100%; height: 100%; background: linear-gradient(90deg, #00ffcc, #00aaff); transition: width 1s linear; }
+  #leaderboard {
+    margin: 20px auto; width: 80%; max-width: 400px;
+    background: rgba(0,0,0,0.4); border-radius: 10px; padding: 10px;
+    text-align: left; box-shadow: 0 0 15px rgba(0,255,204,0.4);
+  }
+  #leaderboard h2 { text-align: center; color: #ffd700; }
+  table { width: 100%; border-collapse: collapse; color: #fff; }
+  th, td { padding: 8px; text-align: center; }
+  th { border-bottom: 1px solid #00ffcc; }
+</style>
 </head>
-
 <body>
-  <!--
-      The body includes the content you see in the page
-      Each element is defined using tags, like this <div></div>
-      The attributes like class="wrapper" let us style elements in the CSS
-    -->
-  <div class="wrapper">
-    <div class="content" role="main">
-      <h1 class="title">Oh hi website!</h1>
-      <img src="/cool-website.svg" class="illustration" alt="cool website" />
-      <div class="instructions">
-        <p>
-          Fork <a href="https://github.com/glitchdotcom/website-to-compute">this project</a> and open it in a GitHub Codespace.
-        </p>
-        <p> Follow the steps in the README to deploy your new website to Fastly in a few steps!
-        </p>
 
-      </div>
+<h1>🧩 IQ Escape: The One-Minute Challenge</h1>
 
-      <footer class="footer">
-        <div>
-          <a class="remix" href="https://github.com/glitchdotcom/website-to-compute">🚧 Get your own site</a>
-        </div>
-      </footer>
-    </div>
-  </div>
+<!-- Username Input -->
+<div id="userSection">
+  <p>Enter your player name:</p>
+  <input id="usernameInput" placeholder="e.g. Harsha">
+  <br>
+  <button id="saveNameBtn">Save Name</button>
+</div>
+
+<!-- Game Section -->
+<div id="gameSection" style="display:none;">
+  <div id="timer">⏰ Time Left: 60s</div>
+  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+  <div id="score">Score: 0</div>
+  <div id="bestScore">Best: 0</div>
+  <p id="question">Press Start to Begin!</p>
+  <input id="answerBox" placeholder="Your answer" disabled>
+  <br>
+  <button id="submitBtn" disabled>Submit</button>
+  <br><br>
+  <button id="startBtn">▶ Start Challenge</button>
+  <p id="result"></p>
+</div>
+
+<!-- Leaderboard -->
+<div id="leaderboard">
+  <h2>🏆 Leaderboard</h2>
+  <table>
+    <thead><tr><th>Player</th><th>Score</th></tr></thead>
+    <tbody id="leaderboardBody"></tbody>
+  </table>
+</div>
+
+<!-- 🎵 Sound & Music -->
+<audio id="bgMusic" loop src="https://cdn.pixabay.com/download/audio/2023/07/09/audio_0e8b25c4c2.mp3?filename=arcade-loop-147362.mp3"></audio>
+<audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8d3e529b7.mp3?filename=correct-2-46134.mp3"></audio>
+<audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9b9123d3e4.mp3?filename=wrong-47985.mp3"></audio>
+
+<script>
+  const questionEl = document.getElementById("question");
+  const answerBox = document.getElementById("answerBox");
+  const submitBtn = document.getElementById("submitBtn");
+  const timerEl = document.getElementById("timer");
+  const progressBar = document.getElementById("progressBar");
+  const scoreEl = document.getElementById("score");
+  const bestScoreEl = document.getElementById("bestScore");
+  const startBtn = document.getElementById("startBtn");
+  const resultEl = document.getElementById("result");
+  const leaderboardBody = document.getElementById("leaderboardBody");
+
+  const bgMusic = document.getElementById("bgMusic");
+  const correctSound = document.getElementById("correctSound");
+  const wrongSound = document.getElementById("wrongSound");
+
+  const userSection = document.getElementById("userSection");
+  const gameSection = document.getElementById("gameSection");
+  const usernameInput = document.getElementById("usernameInput");
+  const saveNameBtn = document.getElementById("saveNameBtn");
+
+  let username = localStorage.getItem("playerName") || "";
+  if (username) {
+    userSection.style.display = "none";
+    gameSection.style.display = "block";
+  }
+
+  saveNameBtn.onclick = () => {
+    const name = usernameInput.value.trim();
+    if (!name) return alert("Enter a valid name!");
+    localStorage.setItem("playerName", name);
+    username = name;
+    userSection.style.display = "none";
+    gameSection.style.display = "block";
+    loadLeaderboard();
+  };
+
+  let timeLeft = 60;
+  let score = 0;
+  let timer;
+  let currentQuestion;
+  let bestScore = localStorage.getItem("bestScore") || 0;
+  bestScoreEl.innerText = `Best: ${bestScore}`;
+
+  const puzzles = [
+    { q: "What has to be broken before you can use it?", a: "egg" },
+    { q: "I’m tall when I’m young, and short when I’m old. What am I?", a: "candle" },
+    { q: "What month has 28 days?", a: "all" },
+    { q: "What goes up but never comes down?", a: "age" },
+    { q: "If you have one, you want to share it. Once you share it, you don’t have it. What is it?", a: "secret" },
+    { q: "What can you catch but not throw?", a: "cold" },
+    { q: "What is full of holes but still holds water?", a: "sponge" },
+    { q: "What gets wetter the more it dries?", a: "towel" },
+    { q: "Which word is spelled incorrectly in every dictionary?", a: "incorrectly" },
+    { q: "What has hands but can’t clap?", a: "clock" }
+  ];
+
+  function startGame() {
+    score = 0;
+    timeLeft = 60;
+    updateProgress();
+    answerBox.disabled = false;
+    submitBtn.disabled = false;
+    resultEl.innerText = "";
+    scoreEl.innerText = "Score: 0";
+    startBtn.disabled = true;
+    bgMusic.volume = 0.3;
+    bgMusic.play();
+    newQuestion();
+
+    timer = setInterval(() => {
+      timeLeft--;
+      timerEl.innerText = `⏰ Time Left: ${timeLeft}s`;
+      updateProgress();
+      if (timeLeft <= 0) endGame();
+    }, 1000);
+  }
+
+  function updateProgress() {
+    progressBar.style.width = (timeLeft / 60) * 100 + "%";
+  }
+
+  function newQuestion() {
+    const randomIndex = Math.floor(Math.random() * puzzles.length);
+    currentQuestion = puzzles[randomIndex];
+    questionEl.innerText = currentQuestion.q;
+    answerBox.value = "";
+  }
+
+  submitBtn.onclick = () => {
+    const ans = answerBox.value.trim().toLowerCase();
+    if (ans === currentQuestion.a) {
+      score++;
+      correctSound.play();
+      scoreEl.innerText = `Score: ${score}`;
+      resultEl.innerText = "✅ Correct!";
+    } else {
+      wrongSound.play();
+      resultEl.innerText = "❌ Wrong!";
+    }
+    newQuestion();
+  };
+
+  function endGame() {
+    clearInterval(timer);
+    answerBox.disabled = true;
+    submitBtn.disabled = true;
+    startBtn.disabled = false;
+    bgMusic.pause();
+    questionEl.innerText = "⏳ Time's up!";
+    resultEl.innerText = `Your final score: ${score}`;
+    saveScore(username, score);
+  }
+
+  startBtn.onclick = startGame;
+
+  function saveScore(name, score) {
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    leaderboard.push({ name, score });
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 5); // top 5
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    loadLeaderboard();
+  }
+
+  function loadLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+    leaderboardBody.innerHTML = "";
+    leaderboard.forEach(player => {
+      leaderboardBody.innerHTML += `<tr><td>${player.name}</td><td>${player.score}</td></tr>`;
+    });
+  }
+
+  loadLeaderboard();
+</script>
 </body>
-
 </html>
